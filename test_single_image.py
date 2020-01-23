@@ -58,11 +58,11 @@ def main(args):
         batch_size=1,
         input_shape=None
     )
-    img, _ = val_set[100]
+    img, _ = val_set[500]
     img = img[0]
 
     result = test_single_image(model, img)
-    cv2.imwrite("result.png", result)
+    cv2.imwrite("result5.png", result)
 
 
 if __name__ == '__main__':

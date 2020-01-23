@@ -106,18 +106,30 @@ class KittiStixelDataset(Sequence):
         return int(np.floor(len(self._image_dict) / self._batch_size))
 
     def _data_generation(self, list_ids):
-        X = np.stack(
-            [
-                cv2.resize(
+        if self._input_shape:
+            X = np.stack(
+                [
+                    cv2.resize(
+                        cv2.imread(
+                            os.path.join(self._data_path, self._image_paths[idx])
+                        ),
+                        (self._input_shape[1], self._input_shape[0]),
+                    )
+                    for idx in list_ids
+                ],
+                axis=0,
+            )
+        else:
+            X = np.stack(
+                [
                     cv2.imread(
                         os.path.join(self._data_path, self._image_paths[idx])
-                    ),
-                    (self._input_shape[1], self._input_shape[0]),
-                )
-                for idx in list_ids
-            ],
-            axis=0,
-        )
+                    )
+                    for idx in list_ids
+                ],
+                axis=0,
+            )
+
 
         if self._transform:
             X = np.stack(
