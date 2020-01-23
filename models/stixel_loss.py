@@ -6,16 +6,26 @@ import tensorflow.keras.backend as K
 
 
 class StixelLoss(object):
-    def __init__(self, num_bins=50, alpha=1.0, epsilon=0.0001):
+    __name__ = "stixel loss"
+
+    def __init__(
+        self, num_bins=50, alpha=1.0, epsilon=0.0001, label_size=(100, 50)
+    ):
         self._num_bins = num_bins
         self._alpha = alpha
         self._epsilon = epsilon
+        self._label_size = label_size
 
-    def __call__(self, predict, target):
+    def __call__(self, target, predict, sample_weight=None):
         """
         predict -> (h, w, num_bins)
         target -> (h, w, 2)
         """
+        if predict.shape[0] and len(predict.shape) == 4:
+            predict = tf.reshape(
+                predict,
+                (predict.shape[0], self._label_size[0], self._label_size[1]),
+            )
 
         have_target, stixel_pos = tf.split(target, 2, axis=-1)
         stixel_pos = stixel_pos - 0.5
@@ -25,8 +35,16 @@ class StixelLoss(object):
             + self._epsilon
         )
 
-        fp = tf.gather(predict, K.cast(tf.math.floor(stixel_pos), dtype="int32"), batch_dims=-1)
-        cp = tf.gather(predict, K.cast(tf.math.ceil(stixel_pos), dtype="int32"), batch_dims=-1)
+        fp = tf.gather(
+            predict,
+            K.cast(tf.math.floor(stixel_pos), dtype="int32"),
+            batch_dims=-1,
+        )
+        cp = tf.gather(
+            predict,
+            K.cast(tf.math.ceil(stixel_pos), dtype="int32"),
+            batch_dims=-1,
+        )
 
         p = fp * (tf.math.ceil(stixel_pos) - stixel_pos) + cp * (
             stixel_pos - tf.math.floor(stixel_pos)
@@ -38,7 +56,7 @@ class StixelLoss(object):
         return loss * self._alpha
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sl = StixelLoss()
 
     np.random.seed(100)

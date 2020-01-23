@@ -3,20 +3,27 @@
 import os
 import cv2
 import numpy as np
+from tensorflow.python.keras.utils.data_utils import Sequence
 
 
-class KittiStixelDataset(object):
+class KittiStixelDataset(Sequence):
     def __init__(
         self,
         data_path,
         ground_truth_path,
         phase="train",
-        batch_size=32,
+        batch_size=10,
         label_size=(100, 50),
         shuffle=True,
         transform=None,
         random_seed=2011,
+        input_shape=(370, 800),
     ):
+        """
+        input_shape->(height,width)
+        """
+        super(KittiStixelDataset, self).__init__()
+
         assert os.path.isdir(data_path)
         assert os.path.isfile(ground_truth_path)
 
@@ -26,6 +33,7 @@ class KittiStixelDataset(object):
         self._label_size = label_size
         self._shuffle = shuffle
         self._transform = transform
+        self._input_shape = input_shape
 
         # each line in ground truth contains the following information
         # series_date series_id frame_id x y point_type(Train/Test)
@@ -62,7 +70,8 @@ class KittiStixelDataset(object):
                     [line["x"], line["y"]]
                 )
             else:
-                self._image_dict[cur_base_image_path] = []
+                self._image_dict[cur_base_image_path] = [[line["x"], line["y"]]]
+
         self._image_paths = list(self._image_dict.keys())
         self._stixels_pos = list(self._image_dict.values())
         self._indexes = np.arange(len(self._image_paths))
@@ -99,8 +108,11 @@ class KittiStixelDataset(object):
     def _data_generation(self, list_ids):
         X = np.stack(
             [
-                cv2.imread(
-                    os.path.join(self._data_path, self._image_paths[idx])
+                cv2.resize(
+                    cv2.imread(
+                        os.path.join(self._data_path, self._image_paths[idx])
+                    ),
+                    (self._input_shape[1], self._input_shape[0]),
                 )
                 for idx in list_ids
             ],
@@ -120,8 +132,10 @@ class KittiStixelDataset(object):
 
     def _generate_label_image(self, idx):
         img = cv2.imread(os.path.join(self._data_path, self._image_paths[idx]))
+
         positions = np.array(self._stixels_pos[idx], dtype=np.float32)
         height, width = img.shape[:2]
+
         positions[:, 0] = positions[:, 0] / width
         positions[:, 1] = positions[:, 1] / height
 

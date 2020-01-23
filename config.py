@@ -14,7 +14,15 @@ class Config(object):
 
         # Stixel ground truth from the following third party dataset:
         # https://sites.google.com/view/danlevi/datasets
-        self.GROUND_TRUTH_PATH = os.path.join(self.DATA_PATH, "StixelsGroundTruth.txt")
+        self.GROUND_TRUTH_PATH = os.path.join(
+            self.DATA_PATH, "StixelsGroundTruth.txt"
+        )
+
+        self.SAVED_MODELS_PATH = "saved_models"
+        if not os.path.isdir(self.SAVED_MODELS_PATH):
+            os.system("mkdir -p {}".format(self.SAVED_MODELS_PATH))
+
+        self.NUM_EPOCHS = 50
 
     def display(self):
         """
