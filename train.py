@@ -18,6 +18,8 @@ from albumentations import (
     ToFloat,
     Normalize,
     GaussNoise,
+    RandomShadow,
+    RandomRain,
 )
 
 from tensorflow.keras import optimizers
@@ -34,6 +36,8 @@ def main():
     train_aug = Compose(
         [
             GaussNoise(p=1.0),
+            RandomShadow(p=0.5),
+            RandomRain(p=0.5, rain_type="drizzle"),
             RandomContrast(limit=0.2, p=0.5),
             RandomGamma(gamma_limit=(80, 120), p=0.5),
             RandomBrightness(limit=0.2, p=0.5),
@@ -82,7 +86,7 @@ def main():
             min_lr=0.00001,
         ),
         EarlyStopping(
-            monitor="val_loss", min_delta=0, patience=15, verbose=0, mode="auto"
+            monitor="val_loss", min_delta=0, patience=5, verbose=0, mode="auto"
         ),
     ]
 

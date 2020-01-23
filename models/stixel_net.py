@@ -57,23 +57,31 @@ def build_stixel_net(input_shape=(370, 800, 3)):
     x = layers.ELU()(x)
     x = layers.MaxPooling2D((2, 1), strides=(2, 1))(x)
 
+    x = layers.Dropout(0.4)(x)
+
     x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
     x = layers.ELU()(x)
     x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
     x = layers.ELU()(x)
     x = layers.MaxPooling2D((2, 1), strides=(2, 1), padding="same")(x)
 
-    x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
-    x = layers.ELU()(x)
-    x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
-    x = layers.ELU()(x)
-    x = layers.MaxPooling2D((2, 1), strides=(2, 1))(x)
+    x = layers.Dropout(0.4)(x)
 
     x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
     x = layers.ELU()(x)
     x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
     x = layers.ELU()(x)
     x = layers.MaxPooling2D((2, 1), strides=(2, 1))(x)
+
+    x = layers.Dropout(0.4)(x)
+
+    x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
+    x = layers.ELU()(x)
+    x = layers.Conv2D(256, (3, 3), strides=(1, 1), padding="same")(x)
+    x = layers.ELU()(x)
+    x = layers.MaxPooling2D((2, 1), strides=(2, 1))(x)
+
+    x = layers.Dropout(0.4)(x)
 
     x = layers.Conv2D(2048, (3, 1), strides=(1, 1), padding="valid")(x)
     x = layers.ELU()(x)
@@ -81,6 +89,8 @@ def build_stixel_net(input_shape=(370, 800, 3)):
     x = layers.ELU()(x)
     x = layers.Conv2D(2048, (1, 1), strides=(1, 1))(x)
     x = layers.ELU()(x)
+
+    x = layers.Dropout(0.4)(x)
 
     x = layers.Conv2D(50, (1, 1), strides=(1, 1), activation="softmax")(x)
 
