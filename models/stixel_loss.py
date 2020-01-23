@@ -20,16 +20,16 @@ class StixelLoss(object):
         have_target, stixel_pos = tf.split(target, 2, axis=-1)
         stixel_pos = stixel_pos - 0.5
         stixel_pos = (
-            (stixel_pos - tf.floor(stixel_pos))
-            + tf.floor(stixel_pos)
+            (stixel_pos - tf.math.floor(stixel_pos))
+            + tf.math.floor(stixel_pos)
             + self._epsilon
         )
 
-        fp = self._custom_gather(predict, tf.floor(stixel_pos))
-        cp = self._custom_gather(predict, tf.ceil(stixel_pos))
+        fp = tf.gather(predict, K.cast(tf.math.floor(stixel_pos), dtype="int32"), batch_dims=-1)
+        cp = tf.gather(predict, K.cast(tf.math.ceil(stixel_pos), dtype="int32"), batch_dims=-1)
 
-        p = fp * (tf.ceil(stixel_pos) - stixel_pos) + cp * (
-            stixel_pos - tf.floor(stixel_pos)
+        p = fp * (tf.math.ceil(stixel_pos) - stixel_pos) + cp * (
+            stixel_pos - tf.math.floor(stixel_pos)
         )
 
         loss = -K.log(p) * have_target
@@ -37,42 +37,21 @@ class StixelLoss(object):
 
         return loss * self._alpha
 
-    def _custom_gather(self, predict, stixel_pos):
-        # result = K.variable(shape=stixel_pos.shape)
-        result = K.placeholder(shape=stixel_pos.shape)
-
-        bs, dim1, _ = predict.shape.as_list()
-        casted_stixel_pos = K.cast(stixel_pos, dtype="int32")
-        # result[0][0][10] = casted_stixel_pos[0][0][0]
-
-        for i in range(bs):
-            for j in range(dim1):
-                # result[i][j][0] = predict[i][j][
-                #     casted_stixel_pos[i][j][0]
-                # ]
-
-                tf.assign(result[i][j][0], predict[i][j][
-                    casted_stixel_pos[i][j][0]
-                ])
-
-
-        return result
-
 
 if __name__ == '__main__':
     sl = StixelLoss()
+
+    np.random.seed(100)
     predict = K.variable(np.random.rand(32, 100, 50))
-    target = K.variable(np.random.rand(32, 100, 2)) * 50
-    target = K.clip(target, 0.51, 49.49)
 
-    # sl(predict, target)
-    have_target, stixel_pos = tf.split(target, 2, axis=-1)
-    floor_stixel_pos = K.cast(tf.floor(stixel_pos), dtype="int32")
+    stixel_pos = K.variable(np.random.rand(32, 100, 1) * 50)
+    stixel_pos = K.clip(stixel_pos, 0.51, 49.49)
 
-    # print(K.eval(tf.gather_nd(predict, floor_stixel_pos)[0][1]))
+    have_target = K.variable(np.random.rand(32, 100, 1))
+    have_target = K.round(have_target)
 
-    print(K.eval(tf.gather(predict, floor_stixel_pos).shape))
+    target = tf.stack((have_target, stixel_pos), axis=2)
+    target = K.reshape(target, (32, 100, 2))
 
-    # print(K.eval(floor_stixel_pos[0][1][0]))
-
-    # print(K.eval(predict[0][1][K.eval(floor_stixel_pos[0][1][0])]))
+    loss = sl(predict, target)
+    print(loss)
