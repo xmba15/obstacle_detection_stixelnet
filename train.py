@@ -5,11 +5,11 @@ import numpy as np
 from config import Config
 from data_loader import KittiStixelDataset
 from models import StixelLoss, build_stixel_net
+import utility
 
 from albumentations import (
     Resize,
     Compose,
-    HorizontalFlip,
     CLAHE,
     HueSaturationValue,
     RandomBrightness,
@@ -32,6 +32,7 @@ from tensorflow.keras.callbacks import (
 
 def main():
     dt_config = Config()
+    dt_config.display()
 
     train_aug = Compose(
         [
@@ -53,9 +54,10 @@ def main():
     train_set = KittiStixelDataset(
         data_path=dt_config.DATA_PATH,
         ground_truth_path=dt_config.GROUND_TRUTH_PATH,
-        batch_size=16,
+        batch_size=dt_config.BATCH_SIZE,
         phase="train",
         transform=train_aug,
+        customized_transform=utility.HorizontalFlip(p=0.5)
     )
 
     val_set = KittiStixelDataset(

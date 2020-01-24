@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import argparse
 
-
+parser = argparse.ArgumentParser()
+parser.add_argument("--batch_size", type=int, default=16)
+parsed_args = parser.parse_args()
 _CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -23,6 +26,8 @@ class Config(object):
             os.system("mkdir -p {}".format(self.SAVED_MODELS_PATH))
 
         self.NUM_EPOCHS = 50
+
+        self.BATCH_SIZE = parsed_args.batch_size
 
     def display(self):
         """

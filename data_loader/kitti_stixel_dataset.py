@@ -18,6 +18,7 @@ class KittiStixelDataset(Sequence):
         transform=None,
         random_seed=2011,
         input_shape=(370, 800),
+        customized_transform=None
     ):
         """
         input_shape->(height,width)
@@ -34,6 +35,7 @@ class KittiStixelDataset(Sequence):
         self._shuffle = shuffle
         self._transform = transform
         self._input_shape = input_shape
+        self._customized_transform = customized_transform
 
         # each line in ground truth contains the following information
         # series_date series_id frame_id x y point_type(Train/Test)
@@ -108,40 +110,32 @@ class KittiStixelDataset(Sequence):
         return int(np.floor(len(self._image_dict) / self._batch_size))
 
     def _data_generation(self, list_ids):
-        if self._input_shape:
-            X = np.stack(
-                [
-                    cv2.resize(
-                        cv2.imread(
-                            os.path.join(
-                                self._data_path, self._image_paths[idx]
-                            )
-                        ),
-                        (self._input_shape[1], self._input_shape[0]),
-                    )
-                    for idx in list_ids
-                ],
-                axis=0,
+        X = []
+        y = []
+        for i, idx in enumerate(list_ids):
+            img = cv2.imread(
+                os.path.join(self._data_path, self._image_paths[idx])
             )
-        else:
-            X = np.stack(
-                [
-                    cv2.imread(
-                        os.path.join(self._data_path, self._image_paths[idx])
-                    )
-                    for idx in list_ids
-                ],
-                axis=0,
-            )
+            target = self._generate_label_image(idx)
+            if self._customized_transform:
+                transformed = self._customized_transform(image=img, target=target)
+                img = transformed["image"]
+                target = transformed["target"]
+                del transformed
 
-        if self._transform:
-            X = np.stack(
-                [self._transform(image=elem)["image"] for elem in X], axis=0
-            )
+            if self._input_shape:
 
-        y = np.stack(
-            [self._generate_label_image(idx) for idx in list_ids], axis=0
-        )
+                img = cv2.resize(
+                    img, (self._input_shape[1], self._input_shape[0])
+                )
+                if self._transform:
+                    img = self._transform(image=img)["image"]
+
+            X.append(img)
+            y.append(target)
+
+        X = np.stack(X, axis=0)
+        y = np.stack(y, axis=0)
 
         return X, y
 
