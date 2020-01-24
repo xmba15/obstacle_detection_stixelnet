@@ -94,6 +94,8 @@ class KittiStixelDataset(Sequence):
         return base_image_path
 
     def __getitem__(self, idx):
+        assert idx < self.__len__()
+
         ids = self._indexes[
             idx * self._batch_size : (idx + 1) * self._batch_size
         ]
@@ -111,7 +113,9 @@ class KittiStixelDataset(Sequence):
                 [
                     cv2.resize(
                         cv2.imread(
-                            os.path.join(self._data_path, self._image_paths[idx])
+                            os.path.join(
+                                self._data_path, self._image_paths[idx]
+                            )
                         ),
                         (self._input_shape[1], self._input_shape[0]),
                     )
@@ -129,7 +133,6 @@ class KittiStixelDataset(Sequence):
                 ],
                 axis=0,
             )
-
 
         if self._transform:
             X = np.stack(

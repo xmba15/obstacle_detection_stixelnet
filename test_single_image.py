@@ -16,9 +16,7 @@ import tensorflow.keras.backend as K
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--model_path", required=True
-)
+parser.add_argument("--model_path", required=True)
 # parser.add_argument(
 #     "--image_path", re=True
 # )
@@ -29,12 +27,12 @@ def test_single_image(model, img, label_size=(100, 50)):
     assert img is not None
 
     h, w, c = img.shape
-    val_aug = Compose([Resize(370, 800) ,Normalize(p=1.0)])
+    val_aug = Compose([Resize(370, 800), Normalize(p=1.0)])
     aug_img = val_aug(image=img)["image"]
     aug_img = aug_img[np.newaxis, :]
     predict = model.predict(aug_img, batch_size=1)
     predict = K.reshape(predict, label_size)
-    predict = K.eval(K.argmax(predict, axis= -1))
+    predict = K.eval(K.argmax(predict, axis=-1))
 
     for x, py in enumerate(predict):
         x0 = int(x * w / 100)
@@ -43,6 +41,7 @@ def test_single_image(model, img, label_size=(100, 50)):
         cv2.rectangle(img, (x0, 0), (x1, y), (0, 0, 255), 1)
 
     return img
+
 
 def main(args):
     assert os.path.isfile(args.model_path)
@@ -56,7 +55,7 @@ def main(args):
         ground_truth_path=dt_config.GROUND_TRUTH_PATH,
         phase="val",
         batch_size=1,
-        input_shape=None
+        input_shape=None,
     )
     img, _ = val_set[500]
     img = img[0]
@@ -65,5 +64,5 @@ def main(args):
     cv2.imwrite("result5.png", result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(parsed_args)

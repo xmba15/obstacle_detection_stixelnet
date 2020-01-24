@@ -83,16 +83,14 @@ def main():
             patience=7,
             verbose=0,
             mode="auto",
-            min_lr=0.00001,
+            min_lr=0.000001,
         ),
         EarlyStopping(
-            monitor="val_loss", min_delta=0, patience=5, verbose=0, mode="auto"
+            monitor="val_loss", min_delta=0, patience=10, verbose=0, mode="auto"
         ),
     ]
 
-    model.compile(
-        loss=loss_func, optimizer=opt, callbacks=callbacks,
-    )
+    model.compile(loss=loss_func, optimizer=opt)
     # model.summary()
 
     history = model.fit_generator(
@@ -106,7 +104,7 @@ def main():
     )
 
     history_path = os.path.join(dt_config.SAVED_MODELS_PATH, "history.pkl")
-    np.save(history_path, history)
+    np.save(history_path, history.history)
 
 
 if __name__ == "__main__":
