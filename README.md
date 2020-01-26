@@ -35,6 +35,14 @@ After downloading the dataset, run
 model weights will be saved into ./saved_models directory
 
 ## Test one image ##
+***
+
+- Download pretrained model weights with
+```bash
+    python3 ./scripts/download_kitti_stixels_model_weights.py
+```
+
+- Test on an image
 ```bash
     python3 ./test_single_image.py --model_path [path/to/model/weights]
 ```
