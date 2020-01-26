@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-from config import Config
 import argparse
 import numpy as np
 import cv2
+import tqdm as tqdm
 from models import build_stixel_net
 from data_loader import KittiStixelDataset
 from albumentations import (
@@ -13,7 +13,6 @@ from albumentations import (
     Normalize,
 )
 import tensorflow.keras.backend as K
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", required=True)
@@ -46,6 +45,7 @@ def test_single_image(model, img, label_size=(100, 50)):
 def main(args):
     assert os.path.isfile(args.model_path)
     # assert os.path.isfile(args.image_path)
+    from config import Config
 
     dt_config = Config()
     model = build_stixel_net()
@@ -57,11 +57,29 @@ def main(args):
         batch_size=1,
         input_shape=None,
     )
-    img, _ = val_set[500]
-    img = img[0]
 
-    result = test_single_image(model, img)
-    cv2.imwrite("result5.png", result)
+    indices = (
+        100,
+        156,
+        145,
+        200,
+        250,
+        300,
+        400,
+        500,
+        424,
+        543,
+        567,
+        600,
+        632,
+        700,
+    )
+    for i, idx in tqdm.tqdm(enumerate(indices)):
+        img, _ = val_set[idx]
+        img = img[0]
+
+        result = test_single_image(model, img)
+        cv2.imwrite("result{}.png".format(i), result)
 
 
 if __name__ == "__main__":

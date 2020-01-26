@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-import numpy as np
-from config import Config
-from data_loader import KittiStixelDataset
-from models import StixelLoss, build_stixel_net
-import utility
-
+from tensorflow.keras.callbacks import (
+    ModelCheckpoint,
+    ReduceLROnPlateau,
+    EarlyStopping,
+)
+from tensorflow.keras import optimizers
 from albumentations import (
     Resize,
     Compose,
@@ -21,13 +20,19 @@ from albumentations import (
     RandomShadow,
     RandomRain,
 )
+import os
+import numpy as np
+from config import Config
+from data_loader import KittiStixelDataset
+from models import StixelLoss, build_stixel_net
+import utility
 
-from tensorflow.keras import optimizers
-from tensorflow.keras.callbacks import (
-    ModelCheckpoint,
-    ReduceLROnPlateau,
-    EarlyStopping,
-)
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--batch_size", type=int, default=16)
+parser.add_argument("--num_epoch", type=int, default=50)
+parsed_args = parser.parse_args()
 
 
 def main():
@@ -54,10 +59,10 @@ def main():
     train_set = KittiStixelDataset(
         data_path=dt_config.DATA_PATH,
         ground_truth_path=dt_config.GROUND_TRUTH_PATH,
-        batch_size=dt_config.BATCH_SIZE,
+        batch_size=parsed_args.batch_size,
         phase="train",
         transform=train_aug,
-        customized_transform=utility.HorizontalFlip(p=0.5)
+        customized_transform=utility.HorizontalFlip(p=0.5),
     )
 
     val_set = KittiStixelDataset(
@@ -100,7 +105,7 @@ def main():
         steps_per_epoch=len(train_set),
         validation_data=val_set,
         validation_steps=len(val_set),
-        epochs=dt_config.NUM_EPOCHS,
+        epochs=parsed_args.num_epoch,
         callbacks=callbacks,
         shuffle=True,
     )
