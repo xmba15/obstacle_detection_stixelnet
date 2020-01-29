@@ -2,30 +2,26 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.backend as K
+import tensorflow.keras as keras
+from keras.losses import Loss
+import keras.backend as K
 
 
-class StixelLoss(object):
-    __name__ = "stixel loss"
-
+class StixelLoss(Loss):
     def __init__(
         self, num_bins=50, alpha=1.0, epsilon=0.0001, label_size=(100, 50)
     ):
+        super(StixelLoss, self).__init__(name="stixel_loss")
         self._num_bins = num_bins
         self._alpha = alpha
         self._epsilon = epsilon
         self._label_size = label_size
 
-    def __call__(self, target, predict, sample_weight=None):
+    def call(self, target, predict):
         """
         predict -> (h, w, num_bins)
         target -> (h, w, 2)
         """
-        if predict.shape[0] and len(predict.shape) == 4:
-            predict = tf.reshape(
-                predict,
-                (predict.shape[0], self._label_size[0], self._label_size[1]),
-            )
 
         have_target, stixel_pos = tf.split(target, 2, axis=-1)
         stixel_pos = stixel_pos - 0.5
@@ -55,21 +51,13 @@ class StixelLoss(object):
 
         return loss * self._alpha
 
+    def get_config(self):
+        config = {
+            "num_bins": self._num_bins,
+            "alpha": self._alpha,
+            "epsilon": self._epsilon,
+            "label_size": self._label_size,
+        }
 
-if __name__ == "__main__":
-    sl = StixelLoss()
-
-    np.random.seed(100)
-    predict = K.variable(np.random.rand(32, 100, 50))
-
-    stixel_pos = K.variable(np.random.rand(32, 100, 1) * 50)
-    stixel_pos = K.clip(stixel_pos, 0.51, 49.49)
-
-    have_target = K.variable(np.random.rand(32, 100, 1))
-    have_target = K.round(have_target)
-
-    target = tf.stack((have_target, stixel_pos), axis=2)
-    target = K.reshape(target, (32, 100, 2))
-
-    loss = sl(predict, target)
-    print(loss)
+        base_config = super(StixelLoss, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))

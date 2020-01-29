@@ -55,7 +55,7 @@ def main():
         ]
     )
 
-    val_aug = Compose([Normalize(p=1.0),])
+    val_aug = Compose([Normalize(p=1.0)])
     train_set = KittiStixelDataset(
         data_path=dt_config.DATA_PATH,
         ground_truth_path=dt_config.GROUND_TRUTH_PATH,
@@ -98,7 +98,7 @@ def main():
     ]
 
     model.compile(loss=loss_func, optimizer=opt)
-    # model.summary()
+    model.summary()
 
     history = model.fit_generator(
         train_set,

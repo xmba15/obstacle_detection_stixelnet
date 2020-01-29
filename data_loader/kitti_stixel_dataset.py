@@ -18,7 +18,7 @@ class KittiStixelDataset(Sequence):
         transform=None,
         random_seed=2011,
         input_shape=(370, 800),
-        customized_transform=None
+        customized_transform=None,
     ):
         """
         input_shape->(height,width)
@@ -118,7 +118,9 @@ class KittiStixelDataset(Sequence):
             )
             target = self._generate_label_image(idx)
             if self._customized_transform:
-                transformed = self._customized_transform(image=img, target=target)
+                transformed = self._customized_transform(
+                    image=img, target=target
+                )
                 img = transformed["image"]
                 target = transformed["target"]
                 del transformed

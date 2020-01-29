@@ -10,6 +10,7 @@ class HorizontalFlip(object):
         assert target.ndim == 2 and target.shape[1] == 2
 
         import numpy as np
+
         if np.random.rand() <= self._p:
             return {"image": image[:, ::-1, :], "target": target[::-1, :]}
         else:

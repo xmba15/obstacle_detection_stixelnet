@@ -94,6 +94,8 @@ def build_stixel_net(input_shape=(370, 800, 3)):
 
     x = layers.Conv2D(50, (1, 1), strides=(1, 1), activation="softmax")(x)
 
+    x = layers.Reshape((100, 50))(x)
+
     model = models.Model(inputs=img_input, outputs=x)
 
     return model
