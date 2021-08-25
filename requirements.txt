@@ -1,4 +1,4 @@
-tensorflow-gpu==2.0.0
+tensorflow-gpu==2.5.1
 albumentations==0.4.3
 matplotlib
 pykitti
